@@ -1,0 +1,68 @@
+function [rhoOrN2, z, rho0] = MeanDensityProfileFromLatLon(lat0,lon0,method)
+temp_file = 'support/world-ocean-atlas/woa18_decav_t00_04.nc';
+salinity_file = 'support/world-ocean-atlas/woa18_decav_s00_04.nc';
+
+lat = ncread(temp_file,'lat_bnds');
+lon = ncread(temp_file,'lon_bnds');
+depth = ncread(temp_file,'depth');
+z = -depth;
+
+latIndex = find(lat0 >= lat(1,:) & lat0 < lat(2,:));
+lonIndex = find(lon0 >= lon(1,:) & lon0 < lon(2,:));
+
+temperature = squeeze(ncread(temp_file,'t_an',[lonIndex latIndex 1 1],[1 1 Inf Inf]));
+SP = squeeze(ncread(salinity_file,'s_an',[lonIndex latIndex 1 1],[1 1 Inf Inf]));
+
+z(isnan(temperature)) = [];
+SP(isnan(temperature)) = [];
+temperature(isnan(temperature)) = [];
+
+if isempty(z)
+    rhoOrN2 = [];
+    return;
+end
+
+addpath(genpath('support/gsw_matlab_v3_06_11'))
+
+% compute pressure from z
+p = gsw_p_from_z(z,lat0);
+
+% compute Absolute Salinity from Practical Salinity
+SA = gsw_SA_from_SP(SP,p,lon0,lat0);
+
+% Convert in-situ temperature, t, into Conservative Temperature, CT
+CT = gsw_CT_from_t(SA,temperature,p);
+
+% Now compute potential density
+p_ref = 0;
+rho = gsw_rho(SA,CT,p_ref);
+rho0 = double(rho(1));
+
+if length(SA)<=10
+    method = DensityMethod.rho;
+end
+
+switch(method)
+    case DensityMethod.rho
+        % Nothing to do
+        rhoOrN2 = rho;
+    case DensityMethod.rhoFromN2
+        [N2,p_mid] = gsw_Nsquared(SA,CT,p);
+        z_mid = gsw_z_from_p(p_mid,lat0);
+        N2_function = InterpolatingSpline(z_mid,N2);
+        g = 9.81; 
+        rho_s=(-rho0/g)*cumsum(N2_function);
+        rho_s=rho_s + (-rho_s(0)+rho0);
+        rhoOrN2 = rho_s(z);
+    case DensityMethod.N2
+        [rhoOrN2,p_mid] = gsw_Nsquared(SA,CT,p);
+        z = gsw_z_from_p(p_mid,lat0);
+    case DensityMethod.N2function
+        [N2,p_mid] = gsw_Nsquared(SA,CT,p);
+        z = gsw_z_from_p(p_mid,lat0);
+        z_mid = gsw_z_from_p(p_mid,lat0);
+        spline = InterpolatingSpline(z_mid,N2);
+        rhoOrN2 = @(z) spline(z);
+end
+
+end
