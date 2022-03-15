@@ -22,18 +22,19 @@ z_g2 = imSpectral.GaussQuadraturePointsForModesAtFrequency(101,0);
 imSpectral2 = InternalModesSpectral(double(rho),double(z),z_g2,lat0,'nEVP',512);
 imSpectral2.upperBoundary = UpperBoundary.freeSurface;
 imSpectral2.normalization = Normalization.kConstant;
-[F_s,G_s,h_s] = imSpectral2.ModesAtFrequency(2*pi/M2);
+[F_s,G_s,h_s,k,uMaxRatio] = imSpectral2.ModesAtFrequency(0,'uMax');
+
 return
 
 [F_s,G_s,h_s] = imSpectral.ModesAtFrequency(2*pi/M2);
 
 figure
 subplot(1,3,1)
-plot(imSpectral.N2,imSpectral.z)
+plot(imSpectral2.N2,imSpectral2.z)
 subplot(1,3,2)
-plot(G_s(:,1:4),imSpectral.z)
+plot(G_s(:,1:4),imSpectral2.z)
 subplot(1,3,3)
-plot(F_s(:,1:4),imSpectral.z)
+plot(F_s(:,1:4),imSpectral2.z)
 
 [N2,z,rho0] = MeanDensityProfileFromLatLon(lat0,lon0,DensityMethod.N2function);
 if length(rho) < 10
