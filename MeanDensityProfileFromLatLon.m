@@ -2,16 +2,16 @@ function [rhoOrN2, z, rho0] = MeanDensityProfileFromLatLon(lat0,lon0,method)
 temp_file = 'support/world-ocean-atlas/woa18_decav_t00_04.nc';
 salinity_file = 'support/world-ocean-atlas/woa18_decav_s00_04.nc';
 
-lat = ncread(temp_file,'lat_bnds');
-lon = ncread(temp_file,'lon_bnds');
-depth = ncread(temp_file,'depth');
+lat = double(ncread(temp_file,'lat_bnds'));
+lon = double(ncread(temp_file,'lon_bnds'));
+depth = double(ncread(temp_file,'depth'));
 z = -depth;
 
 latIndex = find(lat0 >= lat(1,:) & lat0 < lat(2,:));
 lonIndex = find(lon0 >= lon(1,:) & lon0 < lon(2,:));
 
-temperature = squeeze(ncread(temp_file,'t_an',[lonIndex latIndex 1 1],[1 1 Inf Inf]));
-SP = squeeze(ncread(salinity_file,'s_an',[lonIndex latIndex 1 1],[1 1 Inf Inf]));
+temperature = double(squeeze(ncread(temp_file,'t_an',[lonIndex latIndex 1 1],[1 1 Inf Inf])));
+SP = double(squeeze(ncread(salinity_file,'s_an',[lonIndex latIndex 1 1],[1 1 Inf Inf])));
 
 z(isnan(temperature)) = [];
 SP(isnan(temperature)) = [];
@@ -30,6 +30,12 @@ p = gsw_p_from_z(z,lat0);
 % compute Absolute Salinity from Practical Salinity
 SA = gsw_SA_from_SP(SP,p,lon0,lat0);
 
+switch(method)
+    case {DensityMethod.rhoStable,DensityMethod.rhoStableFromN2,DensityMethod.stableN2}
+        SA = gsw_stabilise_SA_const_t(SA,temperature,p,lon0,lat0);
+    otherwise
+end
+
 % Convert in-situ temperature, t, into Conservative Temperature, CT
 CT = gsw_CT_from_t(SA,temperature,p);
 
@@ -43,10 +49,10 @@ if length(SA)<=10
 end
 
 switch(method)
-    case DensityMethod.rho
+    case {DensityMethod.rho, DensityMethod.rhoStable}
         % Nothing to do
         rhoOrN2 = rho;
-    case DensityMethod.rhoFromN2
+    case {DensityMethod.rhoFromN2,DensityMethod.rhoStableFromN2}
         [N2,p_mid] = gsw_Nsquared(SA,CT,p);
         z_mid = gsw_z_from_p(p_mid,lat0);
         N2_function = InterpolatingSpline(z_mid,N2);
@@ -54,7 +60,7 @@ switch(method)
         rho_s=(-rho0/g)*cumsum(N2_function);
         rho_s=rho_s + (-rho_s(0)+rho0);
         rhoOrN2 = rho_s(z);
-    case DensityMethod.N2
+    case {DensityMethod.N2,DensityMethod.stableN2}
         [rhoOrN2,p_mid] = gsw_Nsquared(SA,CT,p);
         z = gsw_z_from_p(p_mid,lat0);
     case DensityMethod.N2function

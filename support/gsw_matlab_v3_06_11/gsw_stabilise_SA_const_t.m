@@ -110,7 +110,7 @@ if exist('tomlabVersion') == 2
     end
 elseif exist('cplexqp.p') == 6 %IBM CLPEX
     software_solver = 3;
-elseif license('checkout', 'Optimization_Toolbox')  & datenum(matlab_release_date) < 736574
+elseif license('checkout', 'Optimization_Toolbox')  %& datenum(matlab_release_date) < 736574
     software_solver = 2;
     warning off
 else
