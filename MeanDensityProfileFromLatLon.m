@@ -1,4 +1,9 @@
 function [rhoOrN2, z, rho0] = MeanDensityProfileFromLatLon(lat0,lon0,method)
+% WOA spacing
+% 0-100m: 5m spacing
+% 100-500m: 25m spacing
+% 500-2000m: 50m spacing
+% 2000-5500m: 100m spacing
 temp_file = 'support/world-ocean-atlas/woa18_decav_t00_04.nc';
 salinity_file = 'support/world-ocean-atlas/woa18_decav_s00_04.nc';
 
