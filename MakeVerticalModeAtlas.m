@@ -88,12 +88,14 @@ for iLat = 1:length(lat)
     for iLon = 1:length(lon)
         lat0 = lat(iLat);
         lon0 = lon(iLon);
-        [rho,z] = MeanDensityProfileFromLatLon(lat0,lon0,DensityMethod.rho);
+        [rho,z_rho] = MeanDensityProfileFromLatLon(lat0,lon0,DensityMethod.rho);
+        [N2,z,rho0] = MeanDensityProfileFromLatLon(lat0,lon0,DensityMethod.stableN2);
         if length(rho) > 10
-            im = InternalModesSpectral(double(rho),double(z),double(z),lat0,'nEVP',512);
+            N2function = @(zz) interp1(z,N2,zz,'linear','extrap');
+            im = InternalModesSpectral(N2function,[min(z_rho) max(z_rho)],z_rho,lat0,'nEVP',512,'N2',1,'rho0',rho0);
             im.upperBoundary = UpperBoundary.freeSurface;
             z_g = im.GaussQuadraturePointsForModesAtFrequency(nZ,0);
-            im = InternalModesSpectral(double(rho),double(z),z_g,lat0,'nEVP',512,'nModes',nModes);
+            im = InternalModesSpectral(N2function,[min(z_rho) max(z_rho)],z_g,lat0,'nEVP',512,'nModes',nModes,'N2',1,'rho0',rho0);
             im.upperBoundary = UpperBoundary.freeSurface;
             im.normalization = Normalization.uMax;
             [F,G,h,k,wMaxRatio,kConstantRatio,omegaConstantRatio] = im.ModesAtFrequency(0,'wMax','kConstant','omegaConstant');

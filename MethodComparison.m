@@ -1,4 +1,6 @@
 lat0 = 31; lon0 = -59;
+lat0 = 11; lon0 = 142;
+lat0 = 11; lon0 = 150;
 [rhoOrN2,z,rho0] = MeanDensityProfileFromLatLon(lat0,lon0,DensityMethod.rhoFromN2);
 if length(rhoOrN2) < 10
     error('There are fewer than 10 points.');

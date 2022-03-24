@@ -12,6 +12,7 @@ lonIndex = find(lon0 >= lon(1,:) & lon0 < lon(2,:));
 
 temperature = double(squeeze(ncread(temp_file,'t_an',[lonIndex latIndex 1 1],[1 1 Inf Inf])));
 SP = double(squeeze(ncread(salinity_file,'s_an',[lonIndex latIndex 1 1],[1 1 Inf Inf])));
+% temperature_dd = double(squeeze(ncread(temp_file,'t_dd',[lonIndex latIndex 1 1],[1 1 Inf Inf])));
 
 z(isnan(temperature)) = [];
 SP(isnan(temperature)) = [];
@@ -19,6 +20,7 @@ temperature(isnan(temperature)) = [];
 
 if isempty(z)
     rhoOrN2 = [];
+    rho0 = [];
     return;
 end
 
