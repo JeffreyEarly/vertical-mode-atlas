@@ -23,7 +23,7 @@ z(isnan(temperature)) = [];
 SP(isnan(temperature)) = [];
 temperature(isnan(temperature)) = [];
 
-if isempty(z)
+if isempty(z) || length(z) < 3
     rhoOrN2 = [];
     rho0 = [];
     return;

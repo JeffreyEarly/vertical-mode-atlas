@@ -89,7 +89,7 @@ totalProfiles = length(lat)*length(lon);
 iFinished = 0;
 iSkipped = 0;
 
-for iLat = 47:length(lat)
+for iLat = 49:length(lat)
     for iLon = 1:length(lon)
         if mod(iLon,5) == 0
             timePerStep = (datetime('now')-startTime)/(iFinished+0.1*iSkipped); % we assume skipping takes 1/10th the time
@@ -103,14 +103,15 @@ for iLat = 47:length(lat)
 %         [z_rho,indices] = sort(z_rho);
 %         rho = rho(indices);
         [N2,z,rho0] = MeanDensityProfileFromLatLon(lat0,lon0,DensityMethod.stableN2);
-        [z,indices] = sort(z);
-        N2 = N2(indices);
-        sandwellfile = '/Users/jearly/Documents/MATLAB/sandwell/sandwell.nc';
-        % Need to fix this... this isn't a good assumption. It really
-        % messes up near boundaries.
-        maxdepth = min(OceanDepthFromLatLon(lat0,lon0,sandwellfile),min(z));
-        zLim = [maxdepth; 0];
         if length(N2) > 10
+            [z,indices] = sort(z);
+            N2 = N2(indices);
+            sandwellfile = '/Users/jearly/Documents/MATLAB/sandwell/sandwell.nc';
+            % Need to fix this... this isn't a good assumption. It really
+            % messes up near boundaries.
+            maxdepth = min(OceanDepthFromLatLon(lat0,lon0,sandwellfile),min(z));
+            zLim = [maxdepth; 0];
+        
             iFinished = iFinished + 1;
             % N2function = @(zz) interp1(z,N2,zz,'linear','extrap');
             N2function = SmoothN2(N2,z,zLim);
