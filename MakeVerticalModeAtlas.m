@@ -1,95 +1,95 @@
-% netcdfFile = '/Volumes/MoreStorage/Data/VerticalModeAtlas/VerticalModeAtlas-2d.nc';
-% lat = -89:2:89;
-% lon = -179:2:179;
-% nModes = 100; % number of *fully* resolved modes, include barotropic
-% version = 1.0;
-% 
-% j = 0:1:(nModes-1);
-% nLat = length(lat);
-% nLon = length(lon);
-% nZ = nModes+1; % assuming w=0 at the bottom
-% ncPrecision = 'NC_DOUBLE';
-% 
-% cmode = netcdf.getConstant('CLOBBER');
-% cmode = bitor(cmode,netcdf.getConstant('SHARE'));
-% cmode = bitor(cmode,netcdf.getConstant('NETCDF4'));
-% ncid = netcdf.create(netcdfFile, cmode);
-% 
-% % Define the dimensions
-% latDimID = netcdf.defDim(ncid, 'latitude', nLat);
-% lonDimID = netcdf.defDim(ncid, 'longitude', nLon);
-% modeDimID = netcdf.defDim(ncid, 'mode', nModes);
-% zDimID = netcdf.defDim(ncid, 'depth', nZ);
-% 
-% % Define coordinate variables
-% latVarID = netcdf.defVar(ncid, 'latitude', ncPrecision, latDimID);
-% lonVarID = netcdf.defVar(ncid, 'longitude', ncPrecision, lonDimID);
-% modeVarID = netcdf.defVar(ncid, 'mode', 'NC_INT', modeDimID);
-% netcdf.putAtt(ncid,latVarID, 'units', 'degrees_north');
-% netcdf.putAtt(ncid,lonVarID, 'units', 'degrees_east');
-% netcdf.putAtt(ncid,modeVarID, 'units', 'mode number');
-% 
-% zVarID = netcdf.defVar(ncid, 'z', ncPrecision, [zDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,zVarID, 'long_name', 'quadrature points');
-% netcdf.putAtt(ncid,zVarID, 'units', 'm');
-% 
-% rhoVarID = netcdf.defVar(ncid, 'rho', ncPrecision, [zDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,rhoVarID, 'long_name', 'potential density');
-% 
-% N2VarID = netcdf.defVar(ncid, 'N2', ncPrecision, [zDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,N2VarID, 'long_name', 'squared buoyancy frequency');
-% netcdf.putAtt(ncid,N2VarID, 'units', 's^-2');
-% 
-% 
-% FVarID = netcdf.defVar(ncid, 'F', ncPrecision, [zDimID,modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,FVarID, 'long_name', '(u,v,p) modes');
-% netcdf.putAtt(ncid,FVarID, 'normalization', 'uMax');
-% GVarID = netcdf.defVar(ncid, 'G', ncPrecision, [zDimID,modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,GVarID, 'long_name', '(w,eta) modes');
-% netcdf.putAtt(ncid,GVarID, 'normalization', 'wMax');
-% hVarID  = netcdf.defVar(ncid, 'h', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,hVarID, 'long_name', 'equivalent depth');
-% netcdf.putAtt(ncid,hVarID, 'units', 'm');
-% 
-% FwMaxNormVarID  = netcdf.defVar(ncid, 'FwMaxNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,FwMaxNormVarID, 'long_name', 'Conversion to wMax norm for F modes');
-% FkConstantNormVarID  = netcdf.defVar(ncid, 'FkConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,FkConstantNormVarID, 'long_name', 'Conversion to kConstant norm for F modes');
-% FomegaConstantNormVarID  = netcdf.defVar(ncid, 'FomegaConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,FomegaConstantNormVarID, 'long_name', 'Conversion to omegaConstant norm for F modes');
-% 
-% GuMaxNormVarID  = netcdf.defVar(ncid, 'GuMaxNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,GuMaxNormVarID, 'long_name', 'Conversion to uMax norm for G modes');
-% GkConstantNormVarID  = netcdf.defVar(ncid, 'GkConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,GkConstantNormVarID, 'long_name', 'Conversion to kConstant norm for G modes');
-% GomegaConstantNormVarID  = netcdf.defVar(ncid, 'GomegaConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
-% netcdf.putAtt(ncid,GomegaConstantNormVarID, 'long_name', 'Conversion to omegaConstant norm for G modes');
-% 
-% netcdf.putAtt(ncid,netcdf.getConstant('NC_GLOBAL'), 'Attribution', 'Created by Jeffrey J. Early.');
-% netcdf.putAtt(ncid,netcdf.getConstant('NC_GLOBAL'), 'Version', version);
-% netcdf.putAtt(ncid,netcdf.getConstant('NC_GLOBAL'), 'CreationDate', datestr(datetime('now')));
-% 
-% % End definition mode
-% netcdf.endDef(ncid);
-% 
-% netcdf.putVar(ncid, latVarID, lat);
-% netcdf.putVar(ncid, lonVarID, lon);
-% netcdf.putVar(ncid, modeVarID, j)
-% 
-% 
-% shouldRescale = 1;
-% 
-% [LAT,LON] = ndgrid(lat,lon);
-% 
-% g = 9.81;
-% c = nan([size(LAT),3]);
+netcdfFile = '/Users/jearly/Data/VerticalModeAtlas/VerticalModeAtlas-5d.nc';
+lat = -89:5:89;
+lon = -179:5:179;
+nModes = 100; % number of *fully* resolved modes, include barotropic
+version = 1.0;
+
+j = 0:1:(nModes-1);
+nLat = length(lat);
+nLon = length(lon);
+nZ = nModes+1; % assuming w=0 at the bottom
+ncPrecision = 'NC_DOUBLE';
+
+cmode = netcdf.getConstant('CLOBBER');
+cmode = bitor(cmode,netcdf.getConstant('SHARE'));
+cmode = bitor(cmode,netcdf.getConstant('NETCDF4'));
+ncid = netcdf.create(netcdfFile, cmode);
+
+% Define the dimensions
+latDimID = netcdf.defDim(ncid, 'latitude', nLat);
+lonDimID = netcdf.defDim(ncid, 'longitude', nLon);
+modeDimID = netcdf.defDim(ncid, 'mode', nModes);
+zDimID = netcdf.defDim(ncid, 'depth', nZ);
+
+% Define coordinate variables
+latVarID = netcdf.defVar(ncid, 'latitude', ncPrecision, latDimID);
+lonVarID = netcdf.defVar(ncid, 'longitude', ncPrecision, lonDimID);
+modeVarID = netcdf.defVar(ncid, 'mode', 'NC_INT', modeDimID);
+netcdf.putAtt(ncid,latVarID, 'units', 'degrees_north');
+netcdf.putAtt(ncid,lonVarID, 'units', 'degrees_east');
+netcdf.putAtt(ncid,modeVarID, 'units', 'mode number');
+
+zVarID = netcdf.defVar(ncid, 'z', ncPrecision, [zDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,zVarID, 'long_name', 'quadrature points');
+netcdf.putAtt(ncid,zVarID, 'units', 'm');
+
+rhoVarID = netcdf.defVar(ncid, 'rho', ncPrecision, [zDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,rhoVarID, 'long_name', 'potential density');
+
+N2VarID = netcdf.defVar(ncid, 'N2', ncPrecision, [zDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,N2VarID, 'long_name', 'squared buoyancy frequency');
+netcdf.putAtt(ncid,N2VarID, 'units', 's^-2');
+
+
+FVarID = netcdf.defVar(ncid, 'F', ncPrecision, [zDimID,modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,FVarID, 'long_name', '(u,v,p) modes');
+netcdf.putAtt(ncid,FVarID, 'normalization', 'uMax');
+GVarID = netcdf.defVar(ncid, 'G', ncPrecision, [zDimID,modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,GVarID, 'long_name', '(w,eta) modes');
+netcdf.putAtt(ncid,GVarID, 'normalization', 'wMax');
+hVarID  = netcdf.defVar(ncid, 'h', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,hVarID, 'long_name', 'equivalent depth');
+netcdf.putAtt(ncid,hVarID, 'units', 'm');
+
+FwMaxNormVarID  = netcdf.defVar(ncid, 'FwMaxNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,FwMaxNormVarID, 'long_name', 'Conversion to wMax norm for F modes');
+FkConstantNormVarID  = netcdf.defVar(ncid, 'FkConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,FkConstantNormVarID, 'long_name', 'Conversion to kConstant norm for F modes');
+FomegaConstantNormVarID  = netcdf.defVar(ncid, 'FomegaConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,FomegaConstantNormVarID, 'long_name', 'Conversion to omegaConstant norm for F modes');
+
+GuMaxNormVarID  = netcdf.defVar(ncid, 'GuMaxNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,GuMaxNormVarID, 'long_name', 'Conversion to uMax norm for G modes');
+GkConstantNormVarID  = netcdf.defVar(ncid, 'GkConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,GkConstantNormVarID, 'long_name', 'Conversion to kConstant norm for G modes');
+GomegaConstantNormVarID  = netcdf.defVar(ncid, 'GomegaConstantNorm', ncPrecision, [modeDimID,latDimID,lonDimID]);
+netcdf.putAtt(ncid,GomegaConstantNormVarID, 'long_name', 'Conversion to omegaConstant norm for G modes');
+
+netcdf.putAtt(ncid,netcdf.getConstant('NC_GLOBAL'), 'Attribution', 'Created by Jeffrey J. Early.');
+netcdf.putAtt(ncid,netcdf.getConstant('NC_GLOBAL'), 'Version', version);
+netcdf.putAtt(ncid,netcdf.getConstant('NC_GLOBAL'), 'CreationDate', datestr(datetime('now')));
+
+% End definition mode
+netcdf.endDef(ncid);
+
+netcdf.putVar(ncid, latVarID, lat);
+netcdf.putVar(ncid, lonVarID, lon);
+netcdf.putVar(ncid, modeVarID, j)
+
+
+shouldRescale = 1;
+
+[LAT,LON] = ndgrid(lat,lon);
+
+g = 9.81;
+c = nan([size(LAT),3]);
 
 startTime = datetime('now');
 totalProfiles = length(lat)*length(lon);
 iFinished = 0;
 iSkipped = 0;
 
-for iLat = 49:length(lat)
+for iLat = 1:length(lat)
     for iLon = 1:length(lon)
         if mod(iLon,5) == 0
             timePerStep = (datetime('now')-startTime)/(iFinished+0.1*iSkipped); % we assume skipping takes 1/10th the time
