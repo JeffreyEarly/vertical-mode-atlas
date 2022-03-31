@@ -9,8 +9,8 @@ classdef VerticalModeAtlas
     methods
         function self = VerticalModeAtlas(netcdfFile)
             self.netcdfFile = netcdfFile;
-            self.latitude = ncread(self.netcdfFile,'lat');
-            self.longitude = ncread(self.netcdfFile,'lon');
+            self.latitude = double(ncread(self.netcdfFile,'lat'));
+            self.longitude = double(ncread(self.netcdfFile,'lon'));
         end
 
 
