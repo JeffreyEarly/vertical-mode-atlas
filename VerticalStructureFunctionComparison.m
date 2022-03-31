@@ -4,6 +4,8 @@ LoadFigureDefaults
 
 lat0=45; lon0=-150;
 
+atlas = VerticalModeAtlas('/Volumes/MoreStorage/Data/VerticalModeAtlas/VerticalModeAtlas-01.nc');
+
 [Phi,Gamma,z] = atlas.VerticalStructureFunctions(lat0,lon0);
 
 N2 = atlas.N2(lat0,lon0);

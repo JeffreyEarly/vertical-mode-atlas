@@ -9,8 +9,8 @@ classdef VerticalModeAtlas
     methods
         function self = VerticalModeAtlas(netcdfFile)
             self.netcdfFile = netcdfFile;
-            self.latitude = ncread(self.netcdfFile,'latitude');
-            self.longitude = ncread(self.netcdfFile,'longitude');
+            self.latitude = ncread(self.netcdfFile,'lat');
+            self.longitude = ncread(self.netcdfFile,'lon');
         end
 
 
@@ -46,6 +46,11 @@ classdef VerticalModeAtlas
             
             z = ncread(self.netcdfFile,'z',[1 iLat iLon], [Inf 1 1]);
             N2 = ncread(self.netcdfFile,'N2',[1 iLat iLon], [Inf 1 1]);
+        end
+
+        function h = equivalentDepth(self)
+            h = squeeze(ncread(self.netcdfFile,'h',[2 1 1], [1 Inf Inf]));
+            h(h>1e4)=nan;
         end
 
         function [Phi,Gamma,z] = VerticalStructureFunctions(self,lat0,lon0)

@@ -28,6 +28,10 @@ if ~isempty(abyssalIndex) && (abyssalIndex-lastIndex)>DF
     end
 else
     z_knot = [min(zLim); z(1+DF:DF:end-DF); max(zLim)];
+    % Force the top to only allow for linear splines (no second derivative).
+    if K > 2
+        constraints = struct('t',sz(z(end-1)+(z(end)-z(end-1))/2),'D',2);
+    end
 end
 
 % Now go ahead and do the correct boundary knot repeats/removals
