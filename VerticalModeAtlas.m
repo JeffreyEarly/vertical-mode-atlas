@@ -48,6 +48,14 @@ classdef VerticalModeAtlas
             N2 = ncread(self.netcdfFile,'N2',[1 iLat iLon], [Inf 1 1]);
         end
 
+        function [rho,z] = rho(self,lat0,lon0)
+            iLat = interp1(self.latitude,1:length(self.latitude),lat0,'nearest');
+            iLon = interp1(self.longitude,1:length(self.longitude),lon0,'nearest');
+
+            z = ncread(self.netcdfFile,'z',[1 iLat iLon], [Inf 1 1]);
+            rho = ncread(self.netcdfFile,'rho',[1 iLat iLon], [Inf 1 1]);
+        end
+
         function h = equivalentDepth(self)
             h = squeeze(ncread(self.netcdfFile,'h',[2 1 1], [1 Inf Inf]));
             h(h>1e4)=nan;
