@@ -4,7 +4,9 @@ LoadFigureDefaults
 
 minLon = 25;
 
-atlas = VerticalModeAtlas('/Users/jearly/Data/VerticalModeAtlas/VerticalModeAtlas-01.nc');
+addpath('./..');
+% atlas = VerticalModeAtlas('/Users/jearly/Data/VerticalModeAtlas/VerticalModeAtlas-01.nc');
+atlas = VerticalModeAtlas('/Volumes/MoreStorage/Data/VerticalModeAtlas/VerticalModeAtlas-01.nc');
 lat = atlas.latitude;
 lon = atlas.longitude;
 h = atlas.equivalentDepth();

@@ -51,7 +51,7 @@ xlim([0 2])
 set( gca, 'FontSize', figure_axis_tick_size);
 set(gca, 'YTick', 1000*(-5:1:0));
 title('$b N_0 N^{-1}(z) \Phi(z)$','Interpreter','LaTex', 'FontSize', figure_axis_label_size, 'FontName', figure_font);
-
+ylim([min(z) max(z)])
 
 subplot(1,2,2)
 plot([1 1], [-L 0],'--', 'LineWidth', 1.0*scaleFactor, 'Color', 0*[1 1 1])
@@ -59,5 +59,7 @@ hold on
 plot(GammaExact,z, 'LineWidth', 1.0*scaleFactor, 'Color', 0*[1 1 1])
 set(gca, 'YTick', []);
 xlim([0 1.1*max(GammaExact)])
+ylim([min(z) max(z)])
 title('$b N_0 N(z)\Gamma(z)$','Interpreter','LaTex', 'FontSize', figure_axis_label_size, 'FontName', figure_font);
 
+print('VerticalStructureFunctionOceanStationPapa.eps','-depsc2')

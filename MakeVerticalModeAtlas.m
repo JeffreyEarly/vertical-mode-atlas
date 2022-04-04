@@ -1,5 +1,5 @@
 resolution = '04'; % quarter degree
-resolution = '01'; % one degree
+% resolution = '01'; % one degree
 stride = 1;
 
 temperature_file = sprintf('support/world-ocean-atlas/woa18_decav_t00_%s.nc',resolution);
