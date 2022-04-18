@@ -60,8 +60,11 @@ classdef VerticalModeAtlas
             h = squeeze(ncread(self.netcdfFile,'h',[2 1 1], [1 Inf Inf]));
             h(h>1e4)=nan;
         end
-
+        
         function [Phi,Gamma,z] = VerticalStructureFunctions(self,lat0,lon0)
+            % Optional inputs:
+            % approximation — 'exact-hydrostatic', 'wkb-hydrostatic', 'igm', 'gm'.
+            % verticalModeSpectrum — H(j)
             iLat = interp1(self.latitude,1:length(self.latitude),lat0,'nearest');
             iLon = interp1(self.longitude,1:length(self.longitude),lon0,'nearest');
             
@@ -90,4 +93,68 @@ classdef VerticalModeAtlas
         end
 
     end
+
+    methods  (Access = protected)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %
+        % Error checking and validation
+        %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        function isValid = validateOmega(~, omega)
+            dOmegaVector = diff(omega);
+            if any(dOmegaVector<0)
+                error('omega must be strictly monotonically increasing.')
+            end
+            if max(abs(diff(unique(dOmegaVector)))) > 1e-7
+                error('omega must be an evenly spaced grid');
+            end
+            isValid = 1;
+        end
+
+        function isValid = validateSpectrumType(~, omega, spectrumType)
+            if (any(omega<0)) && strcmp(approximation,'one-sided')
+                error('omega contains negative frequencies, yet you requested a one-sided spectrum. This makes no sense. Try again.');
+            end
+            isValid = any(validatestring(spectrumType,{'one-sided','two-sided'}));
+        end
+
+        function isValid = validateApproximations(~, x)
+            isValid = any(validatestring(x,{'exact','wkb', 'wkb-hydrostatic', 'gm'}));
+        end
+
+        function isValid = validateZ(self, z)
+            isValid = all( z >= min(self.z_in) ) && all(z <= max(self.z_in));
+        end
+
+        function [z,approximation] = validateVarianceArguments(self,z,varargin)
+            p = inputParser;
+            addRequired(p,'z',@(x) self.validateZ(x));
+            addOptional(p,'approximation','exact',@(x) self.validateApproximations(x));
+            parse(p,z,varargin{:})
+            z = p.Results.z;
+            approximation = p.Results.approximation;
+        end
+
+        function [z,omega,approximation,spectrumType] = validateSpectrumArguments(self,z,omega,varargin)
+            if length(varargin) < 2 && all(omega>=0)
+                spectrumTypeDefault = 'one-sided';
+            else
+                spectrumTypeDefault = 'two-sided';
+            end
+
+            p = inputParser;
+            addRequired(p,'z',@(x) self.validateZ(x));
+            addRequired(p,'omega',@(x) self.validateOmega(x));
+            addOptional(p,'approximation','exact',@(x) self.validateApproximations(x));
+            addOptional(p,'spectrumType',spectrumTypeDefault,@(x) self.validateSpectrumType(omega,x));
+            parse(p,z,omega,varargin{:})
+
+            z = p.Results.z;
+            omega = p.Results.omega;
+            approximation = p.Results.approximation;
+            spectrumType = p.Results.spectrumType;
+        end
+    end
+
 end
