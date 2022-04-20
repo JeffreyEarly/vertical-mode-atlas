@@ -108,48 +108,65 @@ classdef VerticalModeAtlas
             h = squeeze(ncread(self.netcdfFile,'h',[2 1 1], [1 Inf Inf]));
             h(h>1e4)=nan;
         end
-        
+
         function [Phi,Gamma,z] = VerticalStructureFunctionsWithDistribution(self,lat0,lon0,H,approximation)
             % Optional inputs:
             % approximation — 'exact-hydrostatic', 'wkb-hydrostatic', 'igm', 'gm'.
             % verticalModeSpectrum — H(j)
-            iLat = interp1(self.latitude,1:length(self.latitude),lat0,'nearest');
-            iLon = interp1(self.longitude,1:length(self.longitude),lon0,'nearest');
-%             approximation = 'exact-hydrostatic';
 
-            if strcmp(approximation,'exact-hydrostatic')
-                z = ncread(self.netcdfFile,'z',[1 iLat iLon], [Inf 1 1]);
-                mode = ncread(self.netcdfFile,'mode');
-                F = ncread(self.netcdfFile,'F',[1 1 iLat iLon], [Inf Inf 1 1]);
-                G = ncread(self.netcdfFile,'G',[1 1 iLat iLon], [Inf Inf 1 1]);
-                h = ncread(self.netcdfFile,'h',[1 iLat iLon], [Inf 1 1]);
-                FkConstantNorm = ncread(self.netcdfFile,'FkConstantNorm',[1 iLat iLon], [Inf 1 1]);
-                GkConstantNorm = ncread(self.netcdfFile,'GkConstantNorm',[1 iLat iLon], [Inf 1 1]);
+            %             approximation = 'exact-hydrostatic';
 
-                F = F.*(FkConstantNorm.');
-                G = G.*(GkConstantNorm.');
-            elseif strcmp(approximation,'wkb-hydrostatic')
+            if strcmp(approximation,'exact-hydrostatic') || strcmp(approximation,'wkb-hydrostatic')
+                if strcmp(approximation,'exact-hydrostatic')
+                    iLat = interp1(self.latitude,1:length(self.latitude),lat0,'nearest');
+                    iLon = interp1(self.longitude,1:length(self.longitude),lon0,'nearest');
+
+                    z = ncread(self.netcdfFile,'z',[1 iLat iLon], [Inf 1 1]);
+                    mode = ncread(self.netcdfFile,'mode');
+                    F = ncread(self.netcdfFile,'F',[1 1 iLat iLon], [Inf Inf 1 1]);
+                    G = ncread(self.netcdfFile,'G',[1 1 iLat iLon], [Inf Inf 1 1]);
+                    h = ncread(self.netcdfFile,'h',[1 iLat iLon], [Inf 1 1]);
+                    FkConstantNorm = ncread(self.netcdfFile,'FkConstantNorm',[1 iLat iLon], [Inf 1 1]);
+                    GkConstantNorm = ncread(self.netcdfFile,'GkConstantNorm',[1 iLat iLon], [Inf 1 1]);
+
+                    F = F.*(FkConstantNorm.');
+                    G = G.*(GkConstantNorm.');
+                elseif strcmp(approximation,'wkb-hydrostatic')
+                    [N2,z] = self.N2(lat0,lon0);
+
+                    N = sqrt(N2);
+                    xi = cumtrapz(z,sqrt(N2));
+                    j = 0:100; % add a barotropic mode, although we will ignore it
+                    h = ((1/self.g)*(xi(end)./(j*pi)).^2);
+                    G = sqrt(2*self.g/xi(end)).*(1./sqrt(N)).*sin(xi*j*pi/xi(end));
+                    F = sqrt(2*h/xi(end)).* sqrt(N) .*cos(xi*j*pi/xi(end));
+
+                    mode = j;
+                end
+
+                Phi = 0*z;
+                Gamma = 0*z;
+                for iMode = 2:length(mode)
+                    j = double(mode(iMode));
+                    Phi = Phi + (1/h(iMode))*F(:,iMode).*F(:,iMode)*H(j); % the 1/h converts it to the const_F_norm
+                    Gamma = Gamma + G(:,iMode).*G(:,iMode)*H(j);
+                end
+                Phi = self.L_gm*Phi;
+                Gamma = (self.invT_gm*self.invT_gm*self.L_gm/self.g)*Gamma;
+            elseif strcmp(approximation,'igm')
                 [N2,z] = self.N2(lat0,lon0);
-                
                 N = sqrt(N2);
-                xi = cumtrapz(z,sqrt(N2));
-                j = 0:100; % add a barotropic mode, although we will ignore it
-                h = ((1/self.g)*(xi(end)./(j*pi)).^2);
-                G = sqrt(2*self.g/xi(end)).*(1./sqrt(N)).*sin(xi*j*pi/xi(end));
-                F = sqrt(2*h/xi(end)).* sqrt(N) .*cos(xi*j*pi/xi(end));
+                Lxi = trapz(z,N);
 
-                mode = j;
-            end
+                Phi = N*self.L_gm/Lxi;
+                Gamma = (self.invT_gm*self.invT_gm*self.L_gm)./(N*Lxi);
+            elseif strcmp(approximation,'gm')
+                [N2,z] = self.N2(lat0,lon0);
+                N = sqrt(N2);
 
-            Phi = 0*z;
-            Gamma = 0*z;
-            for iMode = 2:length(mode)
-                j = double(mode(iMode));
-                Phi = Phi + (1/h(iMode))*F(:,iMode).*F(:,iMode)*H(j); % the 1/h converts it to the const_F_norm
-                Gamma = Gamma + G(:,iMode).*G(:,iMode)*H(j);
+                Phi = N/self.invT_gm;
+                Gamma = self.invT_gm./N;
             end
-            Phi = self.L_gm*Phi;
-            Gamma = (self.invT_gm*self.invT_gm*self.L_gm/self.g)*Gamma;
         end
 
         function [Phi,Gamma,z] = VerticalStructureFunctions(self,lat0,lon0)
