@@ -177,7 +177,7 @@ classdef VerticalModeAtlas
             H_norm = 1/sum((j_star+(1:3000)).^(-5/2));
             H = @(j) H_norm*(j_star+j).^(-5/2);
 
-            [Phi,Gamma,z] = VerticalStructureFunctionsWithDistribution(self,lat0,lon0,H);
+            [Phi,Gamma,z] = VerticalStructureFunctionsWithDistribution(self,lat0,lon0,H,'exact-hydrostatic');
         end
 
     end
