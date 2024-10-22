@@ -1,13 +1,13 @@
 resolution = '04'; % quarter degree
 % resolution = '01'; % one degree
-stride = 1;
+stride = 4;
 
 temperature_file = sprintf('support/world-ocean-atlas/woa18_decav_t00_%s.nc',resolution);
 salinity_file = sprintf('support/world-ocean-atlas/woa18_decav_s00_%s.nc',resolution);
 landsea_file = sprintf('support/world-ocean-atlas/landsea_%s.msk.txt',resolution);
 
 modeAtlasFile = sprintf('/Users/jearly/Data/VerticalModeAtlas/VerticalModeAtlas-%s.nc',resolution);
-modeAtlasFile = sprintf('/Volumes/MoreStorage/Data/VerticalModeAtlas/VerticalModeAtlas-%s.nc',resolution);
+modeAtlasFile = sprintf('/Volumes/MoreStorage/Data/VerticalModeAtlas/VerticalModeAtlas-noSlip-%s.nc',resolution);
 
 addpath(genpath('support/gsw_matlab_v3_06_11'));
 
@@ -239,8 +239,9 @@ for iLat = 1:length(lat) % 136:136
                 % In order to use the WKB spectral, we need to turn
                 % 'splitting' 'on' in chebfun, otherwise it uses too many
                 % points to attempt to deal with our spline fit.
-                im = InternalModesWKBSpectral(N2function,zLim,z,lat0,'nEVP',nEVP,'N2',1,'rho0',rho0);
+                im = InternalModesWKBSpectral(N2=N2function,zIn=zLim,zOut=z,latitude=lat0, rho0=rho(end), nEVP=nEVP);
                 im.upperBoundary = UpperBoundary.freeSurface;
+                im.lowerBoundary = LowerBoundary.noSlip;
                 try
                     z_g = im.GaussQuadraturePointsForModesAtFrequency(nZ,0);
                 catch ME
@@ -256,8 +257,9 @@ for iLat = 1:length(lat) % 136:136
                 end
 
                 z_g(end)=0;
-                im = InternalModesWKBSpectral(N2function,zLim,z_g,lat0,'nEVP',nEVP,'nModes',nModes,'N2',1,'rho0',rho0);
+                im = InternalModesWKBSpectral(N2=N2function,zIn=zLim,zOut=z_g,latitude=lat0, rho0=rho(end), nEVP=nEVP, nModes=nModes);
                 im.upperBoundary = UpperBoundary.freeSurface;
+                im.lowerBoundary = LowerBoundary.noSlip;
                 im.normalization = Normalization.uMax;
                 [F,G,h,k,wMaxRatio,kConstantRatio,omegaConstantRatio] = im.ModesAtFrequency(0,'wMax','kConstant','omegaConstant');
 
